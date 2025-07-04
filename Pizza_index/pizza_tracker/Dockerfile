@@ -1,26 +1,42 @@
 # pizza_tracker/Dockerfile
 
-# Use a base image with Chrome pre-installed
-FROM selenium/standalone-chrome:latest-amd64
+FROM python:3.9-slim
 
-# Switch to root user to install packages
-USER root
+# Install system dependencies for Chrome and ChromeDriver
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    unzip \
+    gnupg \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python and pip
-RUN apt-get update && apt-get install -y python3-pip
+# Install Chromium (works on ARM64)
+RUN apt-get update && apt-get install -y \
+    chromium \
+    chromium-driver \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the application code
-COPY ./src /app/src
+# Copy requirements first for better caching
 COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Switch back to the default user
-USER seluser
+# Copy the web assets
+COPY ./web /app/web
+
+# Copy the application code
+COPY ./src /app/src
+
+# Set environment variables
+ENV CHROME_BINARY_LOCATION=/usr/bin/chromium
+ENV CHROMEDRIVER_BINARY_LOCATION=/usr/bin/chromedriver
+
+# Expose port
+EXPOSE 8000
 
 # Set the command to run the application
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

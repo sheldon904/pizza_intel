@@ -8,10 +8,10 @@ async function fetchData() {
 
     const statusIndicator = document.getElementById('status-indicator');
     if (data.status === 'abnormal') {
-        statusIndicator.textContent = 'abnormal traffic detected';
-        statusIndicator.className = 'abnormal';
+        statusIndicator.textContent = data.message || 'anomaly detected – danger likely';
+        statusIndicator.className = 'anomaly';
     } else {
-        statusIndicator.textContent = 'nominal busyness';
+        statusIndicator.textContent = data.message || 'nominal busyness';
         statusIndicator.className = 'nominal';
     }
 }

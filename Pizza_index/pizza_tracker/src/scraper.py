@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.service import Service as ChromeService
 from bs4 import BeautifulSoup
 from datetime import datetime
 from typing import List, Dict, Any, Optional
@@ -39,7 +40,7 @@ def get_html(u: str) -> Optional[str]:
         # The path to chromedriver can be set in the system's PATH or specified here.
         # If CHROMEDRIVER_BINARY_LOCATION is not set, Selenium will try to find it in PATH.
         if config.CHROMEDRIVER_BINARY_LOCATION:
-            d = webdriver.Chrome(executable_path=config.CHROMEDRIVER_BINARY_LOCATION, options=options)
+            d = webdriver.Chrome(service=ChromeService(config.CHROMEDRIVER_BINARY_LOCATION), options=options)
         else:
             # This relies on chromedriver being in the system's PATH
             d = webdriver.Chrome(options=options)

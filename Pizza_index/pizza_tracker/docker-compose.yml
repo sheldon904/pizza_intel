@@ -10,7 +10,9 @@ services:
     environment:
       - DATABASE_URL=postgresql://user:password@db/db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    restart: unless-stopped
   db:
     image: postgres:13
     volumes:
@@ -19,6 +21,11 @@ services:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

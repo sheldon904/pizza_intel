@@ -11,8 +11,6 @@ import urllib.parse
 from . import scraper, models, scheduler
 from .database import SessionLocal, engine
 
-models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
 
 # Mount the static files directory
@@ -20,6 +18,8 @@ app.mount("/static", StaticFiles(directory="web/static"), name="static")
 
 @app.on_event("startup")
 def startup_event():
+    # Create database tables on startup
+    models.Base.metadata.create_all(bind=engine)
     scheduler.start_scheduler()
 
 # Dependency
@@ -40,8 +40,8 @@ async def get_status(db: Session = Depends(get_db)):
     latest_data = db.query(models.ScrapeData).order_by(models.ScrapeData.scrape_time.desc()).first()
     if latest_data and latest_data.popularity_percent_current is not None and latest_data.popularity_percent_normal is not None:
         if latest_data.popularity_percent_current > latest_data.popularity_percent_normal * 1.5:
-            return {"status": "abnormal"}
-    return {"status": "nominal"}
+            return {"status": "abnormal", "message": "anomaly detected – danger likely"}
+    return {"status": "nominal", "message": "nominal busyness"}
 
 @app.get("/api/data")
 async def get_data(db: Session = Depends(get_db)):
@@ -52,39 +52,8 @@ cli_app = typer.Typer()
 @cli_app.command()
 def scrape(url: str):
     """Scrape a single Google Maps URL for popular times."""
-    print(f"Scraping {url}...")
-    scraped_data = scraper.get_popular_times(url)
-    
-    if not scraped_data:
-        print("No data scraped.")
-        return
-
-    # A very basic way to get a name from the URL provided in instructions.txt
-    try:
-        place_name = urllib.parse.unquote(url.split('query=')[1].split('&')[0])
-    except IndexError:
-        place_name = "Unknown"
-
-    db = SessionLocal()
-    try:
-        for item in scraped_data:
-            db_item = models.ScrapeData(
-                place=place_name,
-                url=url,
-                scrape_time=datetime.now(),
-                day_of_week=item['day_of_week'],
-                hour_of_day=item['hour_of_day'],
-                popularity_percent_normal=item['popularity_percent_normal'],
-                popularity_percent_current=item.get('popularity_percent_current')
-            )
-            db.add(db_item)
-        db.commit()
-        print(f"Successfully saved {len(scraped_data)} records for '{place_name}' to the database.")
-    except Exception as e:
-        print(f"Error saving to database: {e}")
-        db.rollback()
-    finally:
-        db.close()
+    from .scheduler import scrape_url
+    scrape_url(url)
 
 if __name__ == "__main__":
     cli_app()
