@@ -12,6 +12,10 @@
     background-color: green;
 }
 
+.abnormal {
+    background-color: orange;
+}
+
 .anomaly {
     background-color: red;
 }

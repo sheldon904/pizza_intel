@@ -8,7 +8,11 @@ import os
 import sys
 import time
 import urllib.parse
+import requests
+import csv
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -26,32 +30,68 @@ days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 # generate unique runtime for this job
 run_time = datetime.now().strftime('%Y%m%d_%H%M%S')
 
+def expand_url(short_url):
+    try:
+        response = requests.head(short_url, allow_redirects=True, timeout=10)
+        return response.url
+    except requests.exceptions.RequestException as e:
+        print(f"Error expanding URL {short_url}: {e}")
+        return None
+
 def main():
-	# read the list of URLs from a URL, or path to a local csv
+	# read the list of URLs from a URL, or path to a local txt
 	if not config.DEBUG:
 		if len(sys.argv) > 1:
 			# read path to file from system arguments
-			urls = pd.read_csv(sys.argv[1])
+			with open(sys.argv[1], 'r') as f:
+				reader = csv.reader(f)
+				# Skip header if it exists
+				first_line = next(reader)
+				if "url" in first_line[0].lower(): # Check if it's a header
+					pass
+				else:
+					f.seek(0) # Reset file pointer if no header
+				url_list = [row[0].strip() for row in reader if row and row[0].strip()]
 		else:
 			# get path to file from config.py
-			urls = pd.read_csv(config.URL_PATH_INPUT)
+			with open(config.URL_PATH_INPUT, 'r') as f:
+				reader = csv.reader(f)
+				# Skip header if it exists
+				first_line = next(reader)
+				if "url" in first_line[0].lower(): # Check if it's a header
+					pass
+				else:
+					f.seek(0) # Reset file pointer if no header
+				url_list = [row[0].strip() for row in reader if row and row[0].strip()]
 	else:
 		# debugging case
 		print('RUNNING TEST URLS...')
-		urls = pd.read_csv(config.URL_PATH_INPUT_TEST)
-
-	# write to folder logs to remember the state of the config file
-	urls.to_csv('logs' + os.sep + run_time + '.log', index = False)
-
-	url_list = urls.iloc[:, 0].tolist()
+		with open(config.URL_PATH_INPUT_TEST, 'r') as f:
+			reader = csv.reader(f)
+			# Skip header if it exists
+			first_line = next(reader)
+			if "url" in first_line[0].lower(): # Check if it's a header
+				pass
+			else:
+				f.seek(0) # Reset file pointer if no header
+			url_list = [row[0].strip() for row in reader if row and row[0].strip()]
+	
+	expanded_url_list = []
 	for url in url_list:
+		expanded_url = expand_url(url)
+		if expanded_url:
+			expanded_url_list.append(expanded_url)
+		else:
+			print(f"Skipping URL due to expansion error: {url}")
+
+	for url in expanded_url_list:
 		#print(urllib.parse.urlparse(url))
 		#print (url)
 
 		try:
 			data = run_scraper(url)
-		except:
-			print('ERROR:', url, run_time)
+		except Exception as e:
+			print(f'ERROR: {url} {run_time} - {e}')
 			# go to next url
 			continue
 
@@ -71,6 +111,7 @@ def main():
 
 		else:
 			print('WARNING: no data', url, run_time)
+
 
 def run_scraper(u):
 
@@ -115,13 +156,13 @@ def get_html(u,file_name):
 		# requires chromedriver
 		options = webdriver.ChromeOptions()
 		#options.add_argument('--start-maximized')
-		options.add_argument('--headless')
+		# options.add_argument('--headless')
 		# https://stackoverflow.com/a/55152213/2327328
 		# I choose German because the time is 24h, less to parse
 		options.add_argument('--lang=de-DE')
 		options.binary_location = config.CHROME_BINARY_LOCATION
 		chrome_driver_binary = config.CHROMEDRIVER_BINARY_LOCATION
-		d = webdriver.Chrome(chrome_driver_binary, options=options)
+		d = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install(), options=options))
 
 		# get page
 		d.get(u)

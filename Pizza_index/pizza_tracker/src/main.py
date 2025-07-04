@@ -36,8 +36,11 @@ async def read_root():
         return f.read()
 
 @app.get("/api/status")
-async def get_status():
-    # Placeholder for anomaly detection logic
+async def get_status(db: Session = Depends(get_db)):
+    latest_data = db.query(models.ScrapeData).order_by(models.ScrapeData.scrape_time.desc()).first()
+    if latest_data and latest_data.popularity_percent_current is not None and latest_data.popularity_percent_normal is not None:
+        if latest_data.popularity_percent_current > latest_data.popularity_percent_normal * 1.5:
+            return {"status": "abnormal"}
     return {"status": "nominal"}
 
 @app.get("/api/data")

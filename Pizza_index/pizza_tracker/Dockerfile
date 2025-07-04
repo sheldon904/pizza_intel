@@ -1,7 +1,7 @@
 # pizza_tracker/Dockerfile
 
 # Use a base image with Chrome pre-installed
-FROM selenium/standalone-chrome:latest
+FROM selenium/standalone-chrome:latest-amd64
 
 # Switch to root user to install packages
 USER root

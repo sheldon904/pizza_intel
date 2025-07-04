@@ -7,9 +7,9 @@ async function fetchData() {
     const data = await response.json();
 
     const statusIndicator = document.getElementById('status-indicator');
-    if (data.status === 'anomaly') {
-        statusIndicator.textContent = 'anomaly detected – danger likely';
-        statusIndicator.className = 'anomaly';
+    if (data.status === 'abnormal') {
+        statusIndicator.textContent = 'abnormal traffic detected';
+        statusIndicator.className = 'abnormal';
     } else {
         statusIndicator.textContent = 'nominal busyness';
         statusIndicator.className = 'nominal';
