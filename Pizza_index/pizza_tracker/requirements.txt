@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+typer
+selenium
+beautifulsoup4
+sqlalchemy
+psycopg2-binary
+apscheduler

@@ -1,0 +1,17 @@
+/* pizza_tracker/web/static/style.css */
+
+#status-indicator {
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+.nominal {
+    background-color: green;
+}
+
+.anomaly {
+    background-color: red;
+}

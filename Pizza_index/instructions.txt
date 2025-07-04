@@ -1,0 +1,62 @@
+I have cloned the gmaps_popular_times_scraper Python tool, from "https://github.com/philshem/gmaps_popular_times_scraper?tab=readme-ov-file#scraper-of-google-maps-popular-times-for-business-entries" which uses Selenium and BeautifulSoup to extract Google Maps “Popular Times” graphs as JSON.
+
+Business Locations (Google Maps URLs):
+
+Domino’s Pizza (3535 S Ball St, Arlington, VA 22202):
+https://www.google.com/maps/search/?api=1&query=Domino%27s+Pizza+3535+S+Ball+St+Arlington+VA+22202 
+
+
+Papa John’s Pizza (2607 Columbia Pike, Arlington, VA 22204):
+https://www.google.com/maps/search/?api=1&query=Papa+John%27s+Pizza+2607+Columbia+Pike+Arlington+VA+22204 
+
+
+District Pizza Palace (2325 S Eads St, Arlington, VA 22202):
+https://www.google.com/maps/search/?api=1&query=District+Pizza+Palace+2325+S+Eads+St+Arlington+VA+22202 
+
+
+Extreme Pizza (1419 S Fern St, Arlington, VA 22202):
+https://www.google.com/maps/search/?api=1&query=Extreme+Pizza+1419+S+Fern+St+Arlington+VA+22202 
+
+
+We, The Pizza (2100 Crystal Dr, Arlington, VA 22202):
+https://www.google.com/maps/search/?api=1&query=We%2C+The+Pizza+2100+Crystal+Dr+Arlington+VA+22202 
+
+
+Freddie’s Beach Bar (555 23rd St S, Arlington, VA 22202):
+https://www.google.com/maps/search/?api=1&query=Freddie%27s+Beach+Bar+555+23rd+St+S+Arlington+VA+22202 
+
+
+Objective:
+Refactor and extend this scraper into a production-ready service with:
+
+A modular Python package (src/), with clear separation of concerns (scraper, scheduler, storage, API).
+
+A command-line interface for one-off scrapes.
+
+A REST API (FastAPI) exposing endpoints to trigger scrapes and fetch time-series data.
+
+A scheduler (APScheduler or Celery beat) to run periodic scraping jobs.
+
+Data persistence in PostgreSQL via SQLAlchemy models.
+
+Configuration via environment variables (no hard-coded paths).
+
+A comprehensive test suite (pytest) and type hints throughout.
+
+A Dockerfile and docker-compose.yml for local development.
+
+A simple web UI that:
+
+Displays at the top a status indicator with two states:
+
+“anomaly detected – danger likely”
+
+“nominal busyness”
+
+Below the indicator, embeds time-series visualizations (using the repo’s built-in dataviz tool) for each of the listed restaurants.
+
+A GitHub Actions workflow that builds, tests, lints, and publishes a Docker image to AWS ECR.
+
+Deliverable:
+
+A complete project scaffold in a new directory, including all code files, tests, Docker and CI configurations, and a README with usage and deployment instructions.
